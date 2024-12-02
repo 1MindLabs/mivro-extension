@@ -15,7 +15,7 @@ export async function getSavoraResponse(userMessage, uploadedFile) {
       formData.append("type", "media");
 
       const headers = {
-        "Mivro-Email": "test1@mivro.org",
+        "Mivro-Email": "test1@gmail.com",
         "Mivro-Password": "test@1",
       };
 
@@ -34,7 +34,7 @@ export async function getSavoraResponse(userMessage, uploadedFile) {
     }
     const headers = {
       "Content-Type": "application/json",
-      "Mivro-Email": "test1@mivro.org",
+      "Mivro-Email": "test1@gmail.com",
       "Mivro-Password": "test@1",
     };
 
