@@ -22,17 +22,16 @@ function fetchSvg(url, sendResponse) {
  * @param {function} sendResponse - The function to call with the product information.
  */
 function fetchProductInfo(sendResponse, product) {
-  fetch("http://127.0.0.1:5000/api/v1/search/database", {
-    method: "POST",
+  const url = new URL("http://127.0.0.1:5000/api/v1/search/database");
+  url.searchParams.append("product_keyword", product);
+
+  fetch(url, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Mivro-Email": "test1@gmail.com",
-      "Mivro-Password": "test@1",
+      "Mivro-Email": "admin@mivro.org",
+      "Mivro-Password": "admin@123",
     },
-    body: JSON.stringify({
-      product_keyword: product,
-    }),
-    timeout: 15000,
   })
     .then((res) => {
       if (!res.ok) {

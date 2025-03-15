@@ -8,49 +8,36 @@ export async function getSavoraResponse(userMessage, uploadedFile) {
   const apiUrl = "http://127.0.0.1:5000/api/v1/ai/savora";
 
   try {
+    const headers = {
+      "Mivro-Email": "admin@mivro.org",
+      "Mivro-Password": "admin@123",
+    };
+
+    let response;
     if (uploadedFile) {
       const formData = new FormData();
       formData.append("media", uploadedFile);
       formData.append("message", userMessage);
       formData.append("type", "media");
 
-      const headers = {
-        "Mivro-Email": "test1@gmail.com",
-        "Mivro-Password": "test@1",
-      };
-
-      const response = await fetch(apiUrl, {
-        headers: headers,
+      response = await fetch(apiUrl, {
+        headers,
         method: "POST",
         body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return marked.parse(data.response);
+    } else {
+      response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "text",
+          message: userMessage,
+        }),
+      });
     }
-    const headers = {
-      "Content-Type": "application/json",
-      "Mivro-Email": "test1@gmail.com",
-      "Mivro-Password": "test@1",
-    };
-
-    console.log("Headers:", headers);
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify({
-        type: "text",
-        message: userMessage,
-      }),
-    });
-
-    console.log("Response status:", response.status);
-    console.log("Response headers:", response.headers);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -70,60 +57,39 @@ export function renderMessage(content, parent, isUser = true) {
   }
 
   const messageDiv = document.createElement("div");
-  messageDiv.classList.add("message");
-  messageDiv.classList.add(isUser ? "message-user" : "message-bot");
+  messageDiv.classList.add("message", isUser ? "message-user" : "message-bot");
   messageDiv.innerHTML = content;
 
   const messageContainer = document.createElement("div");
-  messageContainer.classList.add("message-container");
-  messageContainer.classList.add(isUser ? "user" : "bot");
+  messageContainer.classList.add("message-container", isUser ? "user" : "bot");
 
-  if (isUser == true) {
-    const editButton = document.createElement("img");
-    editButton.classList.add("edit-button");
-    editButton.classList.add("img-button");
-    editButton.src = chrome.runtime.getURL("./assets/oth-icons/edit.png");
-
-    const deleteButton = document.createElement("img");
-    deleteButton.classList.add("delete-button");
-    deleteButton.classList.add("img-button");
-    deleteButton.src = chrome.runtime.getURL("./assets/oth-icons/delete.png");
-    deleteButton.addEventListener("click", () => {
-      deleteMessage(messageContainer);
-    });
-
-    const copyButton = document.createElement("img");
-    copyButton.classList.add("copy-button");
-    copyButton.classList.add("img-button");
-    copyButton.src = chrome.runtime.getURL("./assets/oth-icons/copy.png");
-    copyButton.addEventListener("click", () => {
-      copyMessage(messageContainer);
-    });
+  if (isUser) {
+    const editButton = createIconButton("edit", "./assets/oth-icons/edit.png");
+    const deleteButton = createIconButton("delete", "./assets/oth-icons/delete.png", () => deleteMessage(messageContainer));
+    const copyButton = createIconButton("copy", "./assets/oth-icons/copy.png", () => copyMessage(messageContainer));
 
     const crudIconDiv = document.createElement("div");
-    crudIconDiv.classList.add("crud-icon-div");
-    crudIconDiv.classList.add("hidden");
-
-    crudIconDiv.appendChild(copyButton);
-    crudIconDiv.appendChild(deleteButton);
-    crudIconDiv.appendChild(editButton);
+    crudIconDiv.classList.add("crud-icon-div", "hidden");
+    crudIconDiv.append(copyButton, deleteButton, editButton);
 
     messageContainer.appendChild(crudIconDiv);
-
-    messageContainer.addEventListener("mouseover", () => {
-      crudIconDiv.classList.remove("hidden");
-    });
-
-    messageContainer.addEventListener("mouseout", () => {
-      crudIconDiv.classList.add("hidden");
-    });
+    messageContainer.addEventListener("mouseover", () => crudIconDiv.classList.remove("hidden"));
+    messageContainer.addEventListener("mouseout", () => crudIconDiv.classList.add("hidden"));
   }
+
   messageContainer.appendChild(messageDiv);
   parent.appendChild(messageContainer);
-
   parent.scrollTop = parent.scrollHeight;
 
   return messageDiv;
+}
+
+function createIconButton(className, src, onClick) {
+  const button = document.createElement("img");
+  button.classList.add(`${className}-button`, "img-button");
+  button.src = chrome.runtime.getURL(src);
+  if (onClick) button.addEventListener("click", onClick);
+  return button;
 }
 
 export async function sendHandler(inputElement, chatDiv, uploadedFile) {
@@ -136,12 +102,7 @@ export async function sendHandler(inputElement, chatDiv, uploadedFile) {
   }
 
   inputElement.value = "";
-  uploadedFile
-    ? renderMessage(
-        `<span class = "file-name">${uploadedFile.name}<span><br>${message}`,
-        chatDiv
-      )
-    : renderMessage(message, chatDiv);
+  renderMessage(uploadedFile ? `<span class="file-name">${uploadedFile.name}</span><br>${message}` : message, chatDiv);
 
   try {
     const response = await getSavoraResponse(message, uploadedFile);

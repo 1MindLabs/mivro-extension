@@ -1,12 +1,12 @@
 export async function loadMessage() {
   const headers = {
     "Content-Type": "application/json",
-    "Mivro-Email": "test1@gmail.org",
-    "Mivro-Password": "test@1",
+    "Mivro-Email": "admin@mivro.org",
+    "Mivro-Password": "admin@123",
   };
   const apiUrl = "http://127.0.0.1:5000/api/v1/chat/load-message";
   const response = await fetch(apiUrl, {
-    method: "POST",
+    method: "GET",
     headers: headers,
   });
 

@@ -3,8 +3,8 @@ export async function deleteMessage(userMessageContainer) {
   const userMessage = userMessageDiv.innerText;
   const headers = {
     "Content-Type": "application/json",
-    "Mivro-Email": "test1@gmail.com",
-    "Mivro-Password": "test@1",
+    "Mivro-Email": "admin@mivro.org",
+    "Mivro-Password": "admin@123",
   };
   const apiUrl = "http://localhost:5000/api/v1/chat/delete-message";
   const response = await fetch(apiUrl, {
